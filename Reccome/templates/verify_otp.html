@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Verify OTP | Recomme</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #121212;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .main-container {
+      width: 90%;
+      max-width: 1100px;
+      height: 550px;
+      display: flex;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+
+    /* LEFT */
+    .image-section {
+      flex: 1.6;
+      position: relative;
+      padding: 40px;
+      background: linear-gradient(to bottom right, #000000aa, #00000044),
+                  url("{{ url_for('static', filename='images/bg1.jpg') }}");
+      background-size: cover;
+    }
+
+    .image-section h1 {
+      color: white;
+      font-size: 34px;
+      margin-top: 20px;
+    }
+
+    .app-logo {
+      width: 50px;
+    }
+
+    /* RIGHT */
+    .form-section {
+      flex: 1;
+      background: white;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .form-section h2 {
+      margin-bottom: 25px;
+      font-size: 28px;
+      text-align: center;
+    }
+
+    .otp-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .otp-input {
+      flex: 1;
+      min-width: 0;
+      max-width: 56px;
+      height: 56px;
+      text-align: center;
+      font-size: 24px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      transition: 0.3s;
+    }
+
+    .otp-input:focus {
+      border-color: #e50914;
+      outline: none;
+      box-shadow: 0 0 5px rgba(229,9,20,0.5);
+    }
+
+    .login-btn {
+      background: #e50914;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .login-btn:hover {
+      background: #c40812;
+    }
+
+    .error-msg {
+      color: #ff4d4d;
+      text-align: center;
+      margin-bottom: 15px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    @media(max-width: 768px) {
+      .main-container {
+        flex-direction: column;
+        height: auto;
+      }
+
+      .image-section {
+        height: 200px;
+      }
+
+      .otp-input {
+        max-width: 46px;
+        height: 46px;
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="main-container">
+
+  <!-- LEFT -->
+  <div class="image-section">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" class="app-logo">
+    <h1>Recomme<br><br>Secure Your Login</h1>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="form-section">
+    <h2>Verify OTP</h2>
+
+    <!-- Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="error-msg">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('verify_otp') }}" method="POST" onsubmit="return combineOTP()">
+
+      <div class="otp-container">
+        <input type="text" maxlength="1" class="otp-input" required>
+        <input type="text" maxlength="1" class="otp-input" required>
+        <input type="text" maxlength="1" class="otp-input" required>
+        <input type="text" maxlength="1" class="otp-input" required>
+        <input type="text" maxlength="1" class="otp-input" required>
+        <input type="text" maxlength="1" class="otp-input" required>
+      </div>
+
+      <!-- Hidden field for final OTP -->
+      <input type="hidden" name="otp" id="otp">
+
+      <button type="submit" class="login-btn">Verify OTP</button>
+    </form>
+
+  </div>
+
+</div>
+
+<script>
+  const inputs = document.querySelectorAll(".otp-input");
+
+  inputs.forEach((input, index) => {
+
+    input.addEventListener("input", (e) => {
+      input.value = input.value.replace(/[^0-9]/g, "");
+
+      if (input.value && index < inputs.length - 1) {
+        inputs[index + 1].focus();
+      }
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Backspace" && !input.value && index > 0) {
+        inputs[index - 1].focus();
+      }
+    });
+
+  });
+
+  function combineOTP() {
+    let otp = "";
+    inputs.forEach(input => otp += input.value);
+
+    document.getElementById("otp").value = otp;
+
+    if (otp.length !== 6) {
+      alert("Enter complete OTP");
+      return false;
+    }
+
+    return true;
+  }
+</script>
+
+</body>
+</html>

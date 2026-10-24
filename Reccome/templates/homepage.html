@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reccome - Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/popup_style.css') }}">
+</head>
+<body>
+<input type="hidden" id="user-saved-genre" value="{{ fav_genre }}">
+<div id="main-wrapper">
+    <aside class="sidebar">
+        <div class="logo" onclick="showPage('home', this)" style="cursor:pointer;"><i class="fa-solid fa-clapperboard"></i> <span style="margin-left: 10px;">Reccome</span></div>
+         <div class="sidebar-divider"></div>
+          <div class="menu-label">Menu</div>
+        <ul class="nav-links" style="margin-top: 10px;">  
+            <li><a href="#" class="active" onclick="showPage('home', this)"><i class="fa-solid fa-house"></i> Home</a></li>
+            <li><a href="#" onclick="showPage('watchlist', this)"><i class="fa-solid fa-bookmark"></i> My Watchlist</a></li>
+            <li><a href="#" onclick="showPage('liked', this)"><i class="fa-solid fa-heart"></i> Liked Movies</a></li>
+            <li><a href="#" onclick="showPage('upcoming', this)"><i class="fa-solid fa-calendar-days"></i> Upcoming</a></li>
+            <li><a href="#" onclick="showPage('profile', this)"><i class="fa-solid fa-user"></i> Profile</a></li>
+        </ul>
+        <div class="sidebar-divider"></div>
+        <div class="menu-label">General</div>
+        <ul class="nav-links">
+        
+            <li><a href="{{ url_for('logout') }}" onclick="localStorage.clear();"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <nav class="top-nav">
+                <a href="#" class="active" onclick="showPage('home')"></a>
+                <a href="#"></a>
+                <a href="#"></a>
+            </nav>
+           <div class="search-container">
+                <div class="icon-btn tooltip-container" id="filter-btn">
+                    <span class="filter-badge" id="filter-badge">0</span>
+                   <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                     <line x1="4" y1="21" x2="4" y2="14"></line>
+                     <line x1="4" y1="10" x2="4" y2="3"></line>
+                     <line x1="12" y1="21" x2="12" y2="12"></line>
+                     <line x1="12" y1="8" x2="12" y2="3"></line>
+                     <line x1="20" y1="21" x2="20" y2="16"></line>
+                     <line x1="20" y1="12" x2="20" y2="3"></line>
+                     <line x1="1" y1="14" x2="7" y2="14"></line>
+                     <line x1="9" y1="8" x2="15" y2="8"></line>
+                     <line x1="17" y1="16" x2="23" y2="16"></line>
+                    </svg>
+                    <span class="tooltip-text">Filter Genres</span>
+                 </div>
+    
+                <div class="search-bar" style="position: relative;"> <i class="fa-solid fa-magnifying-glass"></i>
+                   <input type="text" id="main-search-input" placeholder="Search for movies...">
+                    <button class="search-clear-btn" id="search-clear-btn" onclick="clearSearch()">✕</button>
+                   <span class="search-kbd">Ctrl K</span>
+                        <div id="search-results" class="search-dropdown hidden"></div>
+                </div>
+
+                <div class="icon-btn tooltip-container" id="random-spin-btn">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                         <line x1="12" y1="2" x2="12" y2="22"></line>
+                         <line x1="2" y1="12" x2="22" y2="12"></line>
+                         <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                         <line x1="4.93" y1="19.07" x2="19.07" y2="4.93"></line>
+                        <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+                     <span class="tooltip-text">Surprise Me!</span>
+                </div>
+            </div>
+        </header>     
+
+
+        <div id="home-section">
+            <div id="hero-slider-container">
+    <div class="hero-slider" id="trending-hero">
+        <div class="hero-slide active">
+            <div class="hero-poster-wrapper">
+                <div class="hero-poster" style="background-image: url('https://image.tmdb.org/t/p/original/8Y4Xvj9pS0v1ArUIpS9uTVlsHqy.jpg');"></div>
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-content">
+                <span class="trending-badge"><i class="fa-solid fa-fire"></i> Trending Now</span>
+                <h1 class="hero-title">Loading Trending...</h1>
+                <p class="hero-overview">Fetching the latest blockbusters for you.</p>
+                <div class="hero-actions">
+                    <button class="btn-info"><i class="fa-solid fa-circle-info"></i> More Info</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slider-dots" id="hero-dots"></div>
+</div>
+<h2 style="margin-bottom: 20px;">Action Movies</h2>
+<div class="carousel-wrapper">
+    <button class="scroll-btn left-btn" onclick="scrollCarousel(this, -1)"><i class="fa-solid fa-chevron-left"></i></button>
+    
+    <section class="horizontal-scroll" id="action-movies-container">
+        </section>
+    
+    <button class="scroll-btn right-btn" onclick="scrollCarousel(this, 1)"><i class="fa-solid fa-chevron-right"></i></button>
+</div> 
+
+<h2 style="margin-bottom: 20px; margin-top: 40px;">Comedy Movies</h2>
+<div class="carousel-wrapper">
+    <button class="scroll-btn left-btn" onclick="scrollCarousel(this, -1)"><i class="fa-solid fa-chevron-left"></i></button>
+
+    <section class="horizontal-scroll" id="comedy-movies-container">
+        </section>
+
+    <button class="scroll-btn right-btn" onclick="scrollCarousel(this, 1)"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+
+<h2 style="margin-bottom: 20px; margin-top: 40px;">Horror Movies</h2>
+<div class="carousel-wrapper">
+    <button class="scroll-btn left-btn" onclick="scrollCarousel(this, -1)"><i class="fa-solid fa-chevron-left"></i></button>
+
+    <section class="horizontal-scroll" id="horror-movies-container">
+        </section>
+
+    <button class="scroll-btn right-btn" onclick="scrollCarousel(this, 1)"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+     </div> <div id="genre-result-section" class="hidden" style="padding: 20px; min-height: 100vh;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+        <div>
+            <h2 id="genre-result-title" style="font-size: 28px; font-weight: 700; color: white; margin: 0;">Discover Movies</h2>
+            <p id="genre-result-subtitle" style="color: var(--text-gray); font-size: 14px; margin-top: 5px;">Based on your selected filters</p>
+        </div>
+        <button class="btn-back" onclick="showPage('home')" style="margin: 0; background: var(--primary-red); padding: 10px 20px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-house"></i> Back to Home
+        </button>
+    </div>
+
+    <div class="movies-grid" id="genre-result-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px;">
+        </div>
+</div>
+
+        <div id="movie-detail-section" class="hidden">
+            <button class="btn-back" onclick="closeMovieDetail()">
+                <i class="fa-solid fa-arrow-left"></i> Back to Browse
+            </button>
+
+            <div class="detail-backdrop"></div>
+
+            <div class="glass-panel">
+                <div class="poster-side">
+                    <div class="movie-card-poster"></div>
+                </div>
+
+                <div class="info-side">
+                    <h2 class="movie-title">Loading...</h2>
+                    <div class="metadata"></div>
+                    <div class="section">
+                        <h3>Description</h3>
+                        <p>Fetching story...</p>
+                    </div>
+                    
+                    <div class="actions">
+                        <button class="dt-btn dt-like"><i class="fa-regular fa-heart"></i> Like</button>
+                        <button class="dt-btn dt-watch"><i class="fa-regular fa-bookmark"></i> Watchlist</button>
+                    </div>
+                    <div class="where-to-watch" style="margin-top: 25px;">
+                        <h4 style="color: #94a3b8; font-size: 13px; text-transform: uppercase; margin-bottom: 10px;">Available On</h4>
+                        <div id="ott-providers-list" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <span style="color: white; font-size: 14px;">Fetching providers...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="trailer-container" class="hidden">
+                    <h3>Official Trailer</h3>
+                    <iframe id="movie-trailer" width="100%" height="250" src="" frameborder="0" allowfullscreen style="border-radius: 12px; margin-top: 10px;"></iframe>
+                </div>
+            </div>
+
+            <div class="extra-details-container">
+                <div class="cast-section">
+                    <h3>Top Cast</h3>
+                    <div id="cast-list"></div>
+                </div>
+
+                <div class="recommendations-section">
+                    <h3>More Like This</h3>
+                    <div id="recommendations-grid"></div>
+                </div>
+
+                <div class="reviews-section" style="margin-top: 50px;">
+                    <h2 class="section-title">User Reviews</h2>
+                    <div class="write-review-card">
+                        <div class="review-header">
+                            <div class="user-info">
+                                <div class="user-avatar">{{ name[0] | upper if name else 'U' }}</div> 
+                                <strong>Add Review</strong>
+                            </div>
+                            <div class="star-rating" id="starRating">
+                                <i class="fa-regular fa-star" onclick="setRating(1)"></i>
+                                <i class="fa-regular fa-star" onclick="setRating(2)"></i>
+                                <i class="fa-regular fa-star" onclick="setRating(3)"></i>
+                                <i class="fa-regular fa-star" onclick="setRating(4)"></i>
+                                <i class="fa-regular fa-star" onclick="setRating(5)"></i>
+                            </div>
+                        </div>
+                        <textarea id="reviewInput" placeholder="Write your thoughts..."></textarea>
+                        <div class="review-footer">
+                            <button class="btn-post" id="postReviewBtn" onclick="postReview()">Post</button>
+                        </div>
+                    </div>
+                    <div id="reviewsList" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="watchlist-section" class="hidden">
+            <h2 style="margin-bottom: 20px;">My Watchlist 🔖</h2>
+            <div id="watchlist-empty-state" class="empty-state"><i class="fa-regular fa-bookmark" style="font-size: 50px; margin-bottom: 15px;"></i><h3>Your watchlist is empty</h3></div>
+            <div class="movies-grid" id="watchlist-grid"></div>
+        </div>
+        <div id="upcoming-section" class="hidden">
+            <h2 style="margin-bottom: 20px;">Upcoming Movies 🍿</h2>
+            <div class="movies-grid" id="upcoming-grid">
+        </div>
+        </div>
+        <div id="liked-section" class="hidden">
+            <h2 style="margin-bottom: 20px;">Liked Movies ❤️</h2>
+            <div id="liked-empty-state" class="empty-state"><i class="fa-regular fa-heart" style="font-size: 50px; margin-bottom: 15px;"></i><h3>No liked movies yet</h3></div>
+            <div class="movies-grid" id="liked-grid"></div>
+        </div>
+
+        <div id="profile-section" class="hidden">
+            <div class="profile-container">
+                <div class="profile-header-card">
+                    <div class="profile-content-wrapper">
+                        <div class="avatar-wrapper">
+                            <div class="pro-avatar">{{ name[0] | upper if name else 'U' }}</div>
+                            <h2 class="profile-name-centered">{{ name if name else 'User' }}</h2>
+                        </div>
+                        <div class="profile-details-form">
+                            <div class="form-stacked-container">
+                                <div class="form-group"><label>Username</label><div class="input-box"><i class="fa-regular fa-user"></i><input type="text" id="usernameInput" value="{{ name }}" readonly></div></div>
+                                <div class="form-group"><label>Email Address</label><div class="input-box"><i class="fa-regular fa-envelope"></i><input type="email" value="{{ email }}" readonly class="disabled"></div></div>
+                            </div>
+                            <div class="genre-section" style="margin-top: 25px;">
+                                <label style="display: flex; align-items: center; gap: 8px; position: relative;">
+                                    Your AI Vibe
+                                    <span class="vibe-tooltip-wrapper">
+                                    <i class="fa-solid fa-circle-info vibe-tooltip-icon"></i>
+                                    <span class="vibe-tooltip-text">Updates automatically based on your AI searches! 🤖</span>
+                                </span>
+                                </label>
+                                <div class="genre-tags-wrapper" id="myGenresList">
+                                    <div class="p-genre-tag" style="border-color: #ef4444; color: white; background: rgba(239, 68, 68, 0.1);">
+                                        <span id="profile-vibe-text">Fetching...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>  
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="icon-circle red-glow"><i class="fa-solid fa-heart"></i></div><div class="stat-info"><h2 id="profile-liked-count">0</h2><p>Liked Movies</p></div><div class="stat-bg-icon"><i class="fa-solid fa-heart"></i></div></div>
+                    <div class="stat-card"><div class="icon-circle blue-glow"><i class="fa-solid fa-bookmark"></i></div><div class="stat-info"><h2 id="profile-watchlist-count">0</h2><p>Watchlist</p></div><div class="stat-bg-icon"><i class="fa-solid fa-bookmark"></i></div></div>
+                    <div class="stat-card"><div class="icon-circle purple-glow"><i class="fa-solid fa-star"></i></div><div class="stat-info"><h2 id="profile-review-count">0</h2><p>Reviews Given</p></div><div class="stat-bg-icon"><i class="fa-solid fa-star"></i></div></div>
+                    <div class="stat-card"><div class="icon-circle green-glow"><i class="fa-solid fa-thumbs-up"></i></div><div class="stat-info"><h2 id="profile-rec-count">0</h2><p>Recs Liked</p></div><div class="stat-bg-icon"><i class="fa-solid fa-thumbs-up"></i></div></div>
+                </div>
+            </div>
+        </div>
+        <footer class="main-footer">
+    <div class="footer-divider"></div>
+    <div class="footer-content">
+        <div class="footer-left">
+            <div class="logo-small"><i class="fa-solid fa-clapperboard"></i> Reccome</div>
+            <p>© 2026 Reccome Inc. All rights reserved.</p>
+        </div>
+        <div class="footer-center">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Contact Us</a>
+        </div>
+        <div class="footer-right">
+            <a href="https://instagram.com/reccome" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://twitter.com/reccome" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="mailto:support@reccome.com"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+    </div>
+</footer>
+    </main>
+</div>
+
+{% include 'popup.html' %}
+<script src="{{ url_for('static', filename='js/home_script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/popup_script.js') }}"></script>
+
+<div id="filter-modal" class="filter-modal hidden">
+    <div class="filter-content" style="background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); max-width: 450px; border-radius: 24px; text-align: center; padding: 40px 30px; position: relative; display: flex; flex-direction: column; align-items: center;">
+        
+        <button id="close-filter" class="btn-close" style="position: absolute; top: 15px; right: 20px;">&times;</button>
+        
+        <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 5px;">What do you want to watch?</h3>
+        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 25px;">Select genres (Mix & Match)</p>
+        
+        <div class="filter-genres" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 30px; width: 100%;">
+            <label class="filter-pill"><input type="checkbox" value="28"> Action</label>
+            <label class="filter-pill"><input type="checkbox" value="12"> Adventure</label>
+            <label class="filter-pill"><input type="checkbox" value="16"> Animation</label>
+            <label class="filter-pill"><input type="checkbox" value="35"> Comedy</label>
+            <label class="filter-pill"><input type="checkbox" value="80"> Crime</label>
+            <label class="filter-pill"><input type="checkbox" value="18"> Drama</label>
+            <label class="filter-pill"><input type="checkbox" value="14"> Fantasy</label>
+            <label class="filter-pill"><input type="checkbox" value="27"> Horror</label>
+            <label class="filter-pill"><input type="checkbox" value="10749"> Romance</label>
+            <label class="filter-pill"><input type="checkbox" value="878"> Sci-Fi</label>
+            <label class="filter-pill"><input type="checkbox" value="53"> Thriller</label>
+            <label class="filter-pill"><input type="checkbox" value="9648"> Mystery</label>
+        </div>
+        
+        <button id="apply-filter-btn" class="btn-main-action" style="margin-top: 0; padding: 12px 30px; font-size: 16px; width: 100%;">Apply Filters <span id="filter-count-label"></span <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i></button>
+    </div>
+</div>
+
+<div id="randomizer-modal" class="filter-modal hidden">
+    <div class="filter-content" style="background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); text-align: center; max-width: 380px; padding: 40px 30px; border-radius: 24px; position: relative; display: flex; flex-direction: column; align-items: center;">
+        
+        <button id="close-randomizer" class="btn-close" style="position: absolute; top: 15px; right: 20px;">&times;</button>
+        
+        <div id="randomizer-loading">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 50px; color: var(--primary-red); margin: 30px 0;"></i>
+            <h3 style="color: white; font-size: 20px; font-weight: 600;">Finding a Masterpiece...</h3>
+            <p style="color: var(--text-gray); font-size: 14px; margin-top: 10px;">Analyzing millions of movies</p>
+        </div>
+
+        <div id="randomizer-result" class="hidden" style="width: 100%;">
+            <h2 style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 5px;">We Recommend:</h2>
+            <p style="color: var(--primary-red); font-weight: 600; font-size: 14px; margin-bottom: 20px;">98% Match</p>
+
+            <img id="random-movie-poster" src="" style="width: 180px; height: 260px; object-fit: cover; border-radius: 12px; margin: 0 auto 20px auto; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); display: block;">
+
+            <h2 id="random-movie-title" style="color: white; font-size: 22px; margin-bottom: 8px; font-weight: 600;">Movie Title</h2>
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 25px;">
+                <span id="random-movie-genres">Action • Sci-Fi</span> • <span style="color: #fbbf24; font-weight: bold;">⭐ <span id="random-movie-rating">0.0</span></span>
+            </p>
+
+            <div style="display: flex; gap: 15px; justify-content: center; width: 100%;">
+                <button id="random-watchlist-btn" class="dt-btn dt-like" style="flex: 1; justify-content: center; background: var(--primary-red); border-color: var(--primary-red); color: white;"><i class="fa-solid fa-bookmark"></i> Add</button>
+                <button id="random-watch-btn" class="dt-btn dt-watch" style="flex: 1; justify-content: center; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">Details</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html> 

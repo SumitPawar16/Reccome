@@ -1,0 +1,95 @@
+<div class="overlay" id="popupOverlay">
+
+    <!-- STEP 1: Genre -->
+    <div class="popup-box" id="step1">
+        <button class="close-btn" onclick="closePopup()">✕</button>
+        <div class="popup-header">
+            <span class="popup-tag">AI Picks</span>
+            <h2>What's the vibe tonight?</h2>
+            <p>Pick one or more genres to get started</p>
+        </div>
+        <div class="grid-options">
+            <div class="opt-card" onclick="selectItem(this, 'genre')">🎬 Action</div>
+            <div class="opt-card" onclick="selectItem(this, 'genre')">😂 Comedy</div>
+            <div class="opt-card" onclick="selectItem(this, 'genre')">👻 Horror</div>
+            <div class="opt-card" onclick="selectItem(this, 'genre')">🚀 Sci-Fi</div>
+            <div class="opt-card" onclick="selectItem(this, 'genre')">🎭 Drama</div>
+            <div class="opt-card" onclick="selectItem(this, 'genre')">🔪 Thriller</div>
+        </div>
+        <button id="nextBtn" class="btn-primary" onclick="goToStep2()">
+            Continue <span class="btn-arrow">→</span>
+        </button>
+    </div>
+
+    <!-- STEP 2: Mood -->
+    <div class="popup-box hidden" id="step2">
+        <button class="close-btn" onclick="closePopup()">✕</button>
+        <div class="popup-header">
+            <span class="popup-tag">Step 2 of 2</span>
+            <h2>How are you feeling?</h2>
+            <p>Your mood shapes the perfect pick</p>
+        </div>
+        <div class="grid-options mood-grid">
+            <div class="opt-card" onclick="selectItem(this, 'mood')">😄 Happy</div>
+            <div class="opt-card" onclick="selectItem(this, 'mood')">😢 Sad</div>
+            <div class="opt-card" onclick="selectItem(this, 'mood')">⚡ Excited</div>
+            <div class="opt-card" onclick="selectItem(this, 'mood')">😌 Chill</div>
+        </div>
+        <button id="finishBtn" class="btn-primary" onclick="startLoading()">
+            Find My Movie ✨
+        </button>
+        <button class="btn-ghost" onclick="goToStep1()">← Back</button>
+    </div>
+
+    <!-- LOADING -->
+    <div class="popup-box hidden" id="loadingStep">
+        <div class="loader-wrap">
+            <div class="loader-ring"></div>
+            <span class="loader-icon">🎬</span>
+        </div>
+        <h3>Finding your perfect pick</h3>
+        <p>Analyzing genres, mood & ratings...</p>
+        <div class="loading-timer" id="loadingTimer">0.0s</div>
+        <div class="loading-dots">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+
+    <div class="popup-box result-box hidden" id="resultStep">
+        <button class="close-btn" onclick="closePopup()">✕</button>
+        <div class="match-badge">✦ 98% Match</div>
+
+        <div class="result-poster-wrap">
+            <img src="" class="result-img" id="recImage" alt="Movie Poster">
+            <div class="result-poster-glow"></div>
+        </div>
+
+        <div class="result-info">
+            <h3 id="recTitle">Loading...</h3>
+            <div class="result-rating">
+                <span class="star">★</span>
+                <span id="recRating"></span>
+            </div>
+        </div>
+
+        <div class="feedback-section">
+            <p>Did we nail it?</p>
+            <div class="thumbs">
+                <button class="thumb-btn" onclick="giveFeedback(this.querySelector('i'), 'like')">
+                    <i class="fa-regular fa-thumbs-up"></i>
+                </button>
+                <button class="thumb-btn" onclick="giveFeedback(this.querySelector('i'), 'dislike')">
+                    <i class="fa-regular fa-thumbs-down"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn-outline" id="popupDetailsBtn">View Details</button>
+            <button class="btn-next" id="popupNextBtn" onclick="startLoading()">
+                <i class="fa-solid fa-forward-step"></i> Next
+            </button>
+        </div>
+    </div>
+
+</div>

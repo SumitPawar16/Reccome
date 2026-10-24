@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signup | Movie Recommender</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/signup_style.css') }}" />
+</head>
+<body>
+
+  <div class="main-container">
+    
+    <div class="image-section">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="My App Logo" class="app-logo">
+      
+      <h1>Recomme<br></h1><br><br>  
+      <h1>Can’t Decide What<br>To Watch...?</h1>
+    </div>
+
+    <div class="form-section">
+      <h2>Create Account</h2>
+
+      <form action="{{ url_for('signup') }}" method="POST" onsubmit="return validateSignup()">
+        
+        <input type="text" name="name" placeholder="Full Name" required />
+
+        <input type="email" name="email" id="signupEmail" placeholder="Email" required />
+        
+        <div class="password-container">
+          <input type="password" name="password" id="signupPassword" placeholder="Password (Min 8 chars)" required />
+          <i class="fa-regular fa-eye-slash toggle-password" onclick="togglePassword('signupPassword', this)"></i>
+        </div>
+
+        <div class="password-container">
+          <input type="password" name="confirm_password" id="confirmPassword" placeholder="Confirm Password" required />
+          <i class="fa-regular fa-eye-slash toggle-password" onclick="togglePassword('confirmPassword', this)"></i>
+        </div>
+
+        <p id="signupError" style="color:red; margin-top:5px; margin-bottom: 5px; font-size: 13px;"></p>
+
+        <button type="submit" class="signup-btn">Sign Up</button>
+      
+      </form>
+
+      <div class="divider"></div>
+
+
+      <p class="login-text">
+        Already a user? <a href="{{ url_for('login') }}">Log in</a>
+      </p>
+    </div>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='js/signup_script.js') }}"></script>
+</body>
+</html>

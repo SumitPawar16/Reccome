@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reccome - Admin Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+
+<div style="display: flex;">
+    <aside class="sidebar">
+        <div class="logo"><i class="fa-solid fa-clapperboard"></i> <span style="margin-left: 10px;">Admin Mode</span></div>
+        <p class="sidebar-label">Dashboard Menu</p>
+        <ul class="nav-links">
+            <li><a href="#" class="admin-tab active" data-target="dash-home"><i class="fa-solid fa-chart-pie"></i> Overview</a></li>
+            <li><a href="#" class="admin-tab" data-target="dash-users"><i class="fa-solid fa-users"></i> Users Hub</a></li>
+            <li><a href="#" class="admin-tab" data-target="dash-reviews"><i class="fa-solid fa-shield-halved"></i> Moderation</a></li>
+        </ul>
+        <div style="margin-top: auto;">
+            <a href="/logout" class="admin-tab" style="color: var(--primary-red);"><i class="fa-solid fa-right-from-bracket"></i> Exit Admin</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <!-- ===== OVERVIEW ===== -->
+        <div id="dash-home" class="admin-section active">
+            <div class="section-header">
+                <h2>Platform Overview</h2>
+                <p>Here's what's happening on Reccome today.</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-glass-card">
+                    <div class="stat-icon icon-red"><i class="fa-solid fa-user-group"></i></div>
+                    <div class="stat-details">
+                        <h3>Total Users</h3>
+                        <h2 id="stat-users-count">...</h2>
+                    </div>
+                </div>
+                <div class="stat-glass-card">
+                    <div class="stat-icon icon-green"><i class="fa-solid fa-star"></i></div>
+                    <div class="stat-details">
+                        <h3>Total Reviews</h3>
+                        <h2 id="stat-reviews-count">...</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== USERS HUB ===== -->
+        <div id="dash-users" class="admin-section">
+            <div class="section-header">
+                <h2>Users Hub</h2>
+                <p>Manage community members and their access.</p>
+            </div>
+            <div class="glass-panel">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>User Profile</th>
+                            <th>Role</th>
+                            <th>❤️ Liked</th>
+                            <th>🔖 Watchlist</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== MODERATION ===== -->
+        <div id="dash-reviews" class="admin-section">
+            <div class="section-header">
+                <h2>Moderation Queue</h2>
+                <p>All user reviews. Hide inappropriate content without deleting.</p>
+            </div>
+
+            <!-- Filter bar -->
+            <div style="display:flex; gap:12px; margin-bottom:25px;">
+                <button class="mod-filter-btn active" onclick="filterReviews('all', this)">All</button>
+                <button class="mod-filter-btn" onclick="filterReviews('visible', this)">Visible</button>
+                <button class="mod-filter-btn" onclick="filterReviews('hidden', this)">Hidden 🚩</button>
+            </div>
+
+            <div id="reviews-container">
+                <p style="color: var(--text-gray); text-align:center; padding:40px;">Loading reviews...</p>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

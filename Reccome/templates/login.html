@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Movie Recommender</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login_style.css') }}" />
+</head>
+<body>
+
+  <div class="main-container">
+    
+    <div class="image-section">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="My App Logo" class="app-logo">
+      
+      <h1>Recomme<br></h1><br><br>
+      <h1>Can’t Decide What<br>To Watch...?</h1>
+    </div>
+
+    <div class="form-section">
+      <h2>Welcome Back</h2>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div style="color: #ff4d4d; margin-bottom: 15px; font-size: 14px; text-align: center; font-weight: bold;">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+      <form action="{{ url_for('login') }}" method="POST" onsubmit="return validateLogin()">
+        
+        <input type="email" name="email" id="loginEmail" placeholder="Email" required />
+        
+        <div class="password-container">
+          <input type="password" name="password" id="loginPassword" placeholder="Password (Min 8 chars)" required />
+          <i class="fa-regular fa-eye-slash toggle-password" onclick="togglePassword('loginPassword', this)"></i>
+        </div>
+
+        <p id="loginError" style="color:red; margin-top:5px; margin-bottom: 5px; font-size: 13px;">
+          </p>
+
+        <button type="submit" class="login-btn">Login</button>
+      
+      </form>
+
+      <div class="divider"></div>
+
+      
+      <p class="login-text">
+        Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a>
+      </p>
+    </div>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='js/login_script.js') }}"></script>
+</body>
+</html>
