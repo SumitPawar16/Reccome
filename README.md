@@ -31,8 +31,8 @@ A full-stack web application for discovering movies, saving watchlists and shari
 1. Clone the repository
 
    ```bash
-   git clone https://github.com/SumitPawar16/Reccome-v2.git
-   cd Reccome-v2/Reccome
+   git clone https://github.com/SumitPawar16/Reccome.git
+   cd Reccome/Reccome
    ```
 
 2. Install dependencies
