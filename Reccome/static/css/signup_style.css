@@ -1,0 +1,181 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: #121212;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* MAIN CARD */
+.main-container {
+  width: 90%;
+  max-width: 1100px;
+  height: 550px;
+  display: flex;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+}
+
+/* LEFT IMAGE */
+.image-section {
+  flex: 1.6;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  padding: 40px;
+  transition: background-image 0.5s ease-in-out;
+}
+
+.image-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, rgba(0,0,0,0.6), rgba(0,0,0,0.2));
+}
+
+.image-section h1 {
+  position: relative;
+  color: white;
+  font-size: 36px;
+  z-index: 1;
+  max-width: 300px;
+}
+
+.app-logo {
+  width: 50px;
+  height: auto;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 20px;
+}
+
+/* RIGHT FORM */
+.form-section {
+  flex: 1;
+  background: white;
+  padding: 40px 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.form-section h2 {
+  margin-bottom: 25px;
+  font-size: 28px;
+}
+
+/* INPUT STYLES & PASSWORD ICON CONTAINER */
+.password-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.form-section input {
+  width: 100%;
+  padding: 12px 14px;
+  padding-right: 40px; /* Space for eye icon */
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  margin-bottom: 15px;
+}
+
+/* Inside container, input shouldn't have margin because container has it */
+.password-container input {
+  margin-bottom: 0;
+}
+
+.form-section input:focus {
+  outline: none;
+  border-color: #e50914;
+}
+
+/* EYE ICON STYLE */
+.toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #888;
+  z-index: 10;
+}
+
+.toggle-password:hover {
+  color: #e50914;
+}
+
+/* BUTTONS */
+.signup-btn, .login-btn {
+  background: #e50914;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.signup-btn:hover, .login-btn:hover {
+  background: #c40812;
+}
+
+.divider {
+  text-align: center;
+  margin: 20px 0;
+  color: #888;
+  font-size: 14px;
+}
+
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #ccc;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 15px;
+}
+
+.google-btn img {
+  width: 20px;
+}
+
+.login-text {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.login-text a {
+  color: #e50914;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .main-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .image-section {
+    height: 220px;
+  }
+}
