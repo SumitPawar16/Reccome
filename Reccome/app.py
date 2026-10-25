@@ -34,18 +34,30 @@ pending_signups_collection = db['pending_signups']
 
 def send_otp_email(user_email, otp):
     SENDER_EMAIL = os.getenv('MAIL_SENDER_EMAIL')
-    SENDER_PASSWORD = os.getenv('MAIL_SENDER_PASSWORD')
-    
+
     msg = EmailMessage()
     msg['Subject'] = 'Reccome - Verify Your Account'
     msg['From'] = SENDER_EMAIL
     msg['To'] = user_email
     msg.set_content(f"Welcome to Reccome! 🎬\n\nYour OTP for registration is: {otp}\n\nThis OTP is valid for 10 minutes. Don't share this with anyone.")
-    
+
+    # Render ke free plan pe SMTP ports 25, 465, 587 block hain.
+    # Isliye Brevo ke SMTP relay pe port 2525 use karte hain (smtplib ke saath, block nahi hota).
+    BREVO_SMTP_KEY = os.getenv('BREVO_SMTP_KEY')
+
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-            smtp.login(SENDER_EMAIL, SENDER_PASSWORD)
-            smtp.send_message(msg)
+        if BREVO_SMTP_KEY:
+            BREVO_SMTP_LOGIN = os.getenv('BREVO_SMTP_LOGIN')
+            with smtplib.SMTP('smtp-relay.brevo.com', 2525, timeout=10) as smtp:
+                smtp.starttls()
+                smtp.login(BREVO_SMTP_LOGIN, BREVO_SMTP_KEY)
+                smtp.send_message(msg)
+        else:
+            # Local computer pe Gmail SMTP (10 second timeout taaki server atke nahi)
+            SENDER_PASSWORD = os.getenv('MAIL_SENDER_PASSWORD')
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as smtp:
+                smtp.login(SENDER_EMAIL, SENDER_PASSWORD)
+                smtp.send_message(msg)
         return True
     except Exception as e:
         print("Mail error:", e)
@@ -272,6 +284,255 @@ def admin_delete_review():
  
  
 # --- ADMIN: Review flag/unflag karo (hide from public without deleting) ---
+@app.route('/api/admin/flag_review', methods=['POST'])
+def admin_flag_review():
+    if session.get('role') != 'admin':
+        return jsonify({"error": "Unauthorized"}), 403
+ 
+    data     = request.json
+    movie_id = data.get('movie_id')
+    email    = data.get('email')
+    flag     = data.get('flagged', True)   # True = hide, False = unhide
+ 
+    reviews_collection.update_one(
+        {"movie_id": str(movie_id), "email": email},
+        {"$set": {"flagged": flag}}
+    )
+    return jsonify({"success": True, "flagged": flag})
+
+@app.route('/api/admin/ban_user', methods=['POST'])
+def admin_ban_user():
+    if session.get('role') != 'admin': 
+        return jsonify({"error": "Unauthorized"}), 403
+    
+    email_to_ban = request.json.get('email')
+    
+    if email_to_ban == session.get('email'):
+        return jsonify({"success": False, "message": "You can't ban yourself!"})
+    
+    target_user = users_collection.find_one({"email": email_to_ban})
+    if target_user and target_user.get('role') == 'admin':
+        return jsonify({"success": False, "message": "You can't ban another Admin!"})
+        
+    result = users_collection.delete_one({"email": email_to_ban})
+    
+    if result.deleted_count > 0:
+        return jsonify({"success": True})
+    else:
+        return jsonify({"success": False, "message": "User not found."})
+
+@app.route('/api/admin/change_role', methods=['POST'])
+def admin_change_role():
+    if session.get('role') != 'admin':
+        return jsonify({"error": "Unauthorized"}), 403
+ 
+    data     = request.json
+    email    = data.get('email')
+    new_role = data.get('role')  # "user" ya "admin"
+ 
+    if email == session.get('email'):
+        return jsonify({"success": False, "message": "Apna role khud nahi badal sakte!"}), 400
+ 
+    if new_role not in ['user', 'admin']:
+        return jsonify({"success": False, "message": "Invalid role!"}), 400
+ 
+    users_collection.update_one(
+        {"email": email},
+        {"$set": {"role": new_role}}
+    )
+    return jsonify({"success": True, "new_role": new_role})
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+# --- NAYA ROUTE: AI VIBE SAVE KARNE KE LIYE ---
+@app.route('/api/save_genre', methods=['POST'])
+def save_genre():
+    if 'email' not in session:
+        return jsonify({"success": False, "message": "Not logged in"}), 401
+        
+    data = request.json
+    genre_id = data.get('genre_id')
+    
+    # MongoDB mein user ki profile update karo
+    users_collection.update_one(
+        {"email": session['email']}, 
+        {"$set": {"favorite_genre": genre_id}}
+    )
+    
+    return jsonify({"success": True, "genre_id": genre_id})
+# MOVIE API
+@app.route('/api/movies', methods=['GET'])
+def get_movies():
+    time.sleep(2.5) 
+    
+    BASE_URL = 'https://api.themoviedb.org/3'
+    IMG_URL = 'https://image.tmdb.org/t/p/w500'
+    
+    genres = {'action': 28, 'comedy': 35, 'horror': 27}
+    movies_data = {}
+
+    try:
+        for name, genre_id in genres.items():
+            res = requests.get(f"{BASE_URL}/discover/movie?api_key={TMDB_API_KEY}&with_genres={genre_id}")
+            results = res.json().get('results', [])
+            
+            movies_data[name] = [
+                {
+                    "id": m['id'],
+                    "title": m['title'],
+                    "rating": str(m['vote_average']),
+                    "image": f"{IMG_URL}{m['poster_path']}" if m['poster_path'] else "https://via.placeholder.com/400x600"
+                } for m in results[:10]
+            ]
+        return jsonify(movies_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/movie-details', methods=['GET'])
+def get_movie_details():
+    movie_id = request.args.get('id') 
+    BASE_URL = 'https://api.themoviedb.org/3'
+
+    if not movie_id:
+        return jsonify({"error": "Movie ID missing"}), 400
+
+    try:
+        # 🔥 MAGIC YAHAN HAI: append_to_response mein watch/providers aur reviews add kar diya
+        detail_url = f"{BASE_URL}/movie/{movie_id}?api_key={TMDB_API_KEY}&append_to_response=videos,credits,recommendations,watch/providers,reviews"
+        d = requests.get(detail_url).json()
+
+        if 'id' not in d:
+            return jsonify({"error": "Movie not found"}), 404
+
+        videos = d.get('videos', {}).get('results', [])
+        trailer_key = next((v['key'] for v in videos if v['site'] == 'YouTube' and v['type'] == 'Trailer'), None)
+
+        cast_data = d.get('credits', {}).get('cast', [])
+        processed_cast = [
+            {
+                "name": c['name'], 
+                "role": c.get('character', 'Actor'), 
+                "photo": f"https://image.tmdb.org/t/p/w200{c['profile_path']}" if c.get('profile_path') else "https://via.placeholder.com/100x100?text=No+Photo"
+            } for c in cast_data[:8]
+        ]
+
+        rec_data = d.get('recommendations', {}).get('results', [])
+        processed_recs = [
+            {
+                "id": r['id'],
+                "title": r['title'],
+                "image": f"https://image.tmdb.org/t/p/w500{r['poster_path']}" if r.get('poster_path') else "https://via.placeholder.com/200x300?text=No+Poster",
+                "rating": round(r.get('vote_average', 0), 1)
+            } for r in rec_data[:6]
+        ]
+
+        # 🔥 NAYA: Extract OTT Providers (India 'IN' or fallback to US)
+        # 🔥 UPDATED: Stream + Rent/Buy Fallback Logic
+        providers_data = d.get('watch/providers', {}).get('results', {})
+        region_data = providers_data.get('IN') or providers_data.get('US') or {}
+        
+        # Pehle streaming check karo
+        regional_providers = region_data.get('flatrate', [])
+        
+        # Agar streaming nahi hai, toh Rent wale providers check karo
+        if not regional_providers:
+            regional_providers = region_data.get('rent', [])
+            
+        # Agar Rent bhi nahi hai, toh Buy wale check karo
+        if not regional_providers:
+            regional_providers = region_data.get('buy', [])
+            
+        processed_providers = [
+            {
+                "name": p['provider_name'],
+                "logo": f"https://image.tmdb.org/t/p/original{p['logo_path']}"
+            } for p in regional_providers[:4] 
+        ]
+        # 🔥 NAYA: Extract Real Reviews
+        reviews_data = d.get('reviews', {}).get('results', [])
+        processed_reviews = [
+            {
+                "author": rev['author'],
+                "rating": rev.get('author_details', {}).get('rating', 0),
+                "content": rev['content'][:300] + "..." if len(rev['content']) > 300 else rev['content']
+            } for rev in reviews_data[:3] # Top 3 reviews
+        ]
+
+        return jsonify({
+            "id": movie_id,
+            "overview": d.get('overview', "No synopsis available."),
+            "year": d.get('release_date', "N/A")[:4],
+            "runtime": f"{d.get('runtime', 0)//60}h {d.get('runtime', 0)%60}m" if d.get('runtime') else "N/A",
+            "genres": [g['name'] for g in d.get('genres', [])],
+            "backdrop": f"https://image.tmdb.org/t/p/original{d.get('backdrop_path')}" if d.get('backdrop_path') else None,
+            "trailer": trailer_key,
+            "cast": processed_cast,
+            "recommendations": processed_recs,
+            "providers": processed_providers, 
+            "reviews": processed_reviews      
+        })
+
+    except Exception as e:
+        print(f"Error: {e}") 
+        return jsonify({"error": "Internal server error"}), 500
+# --- LIKES AUR WATCHLIST KA ROUTE ---
+@app.route('/api/toggle_movie', methods=['POST'])
+def toggle_movie():
+    if 'email' not in session:
+        return jsonify({"success": False, "message": "Please login first!"}), 401
+    
+    data = request.json
+    movie_id = data.get('movie_id')
+    movie_title = data.get('movie_title')
+    list_type = data.get('list_type') 
+    rating = data.get('rating', 'N/A')  
+    image = data.get('image', '') 
+    
+    if not movie_id or not list_type:
+        return jsonify({"success": False, "message": "Missing data"}), 400
+
+    email = session['email']
+    movie_obj = {
+        "id": movie_id,
+        "title": movie_title,
+        "rating": rating,
+        "image": image
+    }
+
+    user = users_collection.find_one({"email": email})
+    current_list = user.get(list_type, [])
+    exists = any(item['id'] == movie_id for item in current_list if isinstance(item, dict))
+
+    if exists:
+        users_collection.update_one(
+            {"email": email},
+            {"$pull": {list_type: {"id": movie_id}}}
+        )
+        action = "removed"
+    else:
+        users_collection.update_one(
+            {"email": email},
+            {"$addToSet": {list_type: movie_obj}}
+        )
+        action = "added"
+    return jsonify({"success": True, "action": action, "movie_id": movie_id, "movie_title": movie_title})
+
+@app.route('/api/submit_review', methods=['POST'])
+def submit_review():
+    if 'email' not in session:
+        return jsonify({"success": False, "message": "Please login first!"}), 401
+ 
+    data = request.json
+    movie_id  = data.get('movie_id')
+    movie_title = data.get('movie_title', '')
+    review_text = data.get('review_text', '').strip()
+    rating      = data.get('rating', 0)
+ 
+    if not movie_id or not review_text:
+        returag karo (hide from public without deleting) ---
 @app.route('/api/admin/flag_review', methods=['POST'])
 def admin_flag_review():
     if session.get('role') != 'admin':
