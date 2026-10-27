@@ -391,6 +391,26 @@ def get_movies():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# TMDB ke calls server ke through jaate hain (browser seedha TMDB ko call nahi karta).
+# Isse TMDB key browser mein nahi dikhti, aur jin networks pe TMDB block hai wahan bhi site chalti hai.
+@app.route('/api/tmdb/<path:endpoint>', methods=['GET'])
+def tmdb_proxy(endpoint):
+    if 'email' not in session:
+        return jsonify({"results": [], "error": "Login required"}), 401
+
+    allowed = ['trending/movie/day', 'discover/movie', 'search/movie']
+    if endpoint not in allowed:
+        return jsonify({"results": [], "error": "Not allowed"}), 404
+
+    params = request.args.to_dict()
+    params['api_key'] = TMDB_API_KEY
+    try:
+        res = requests.get(f'https://api.themoviedb.org/3/{endpoint}', params=params, timeout=10)
+        return jsonify(res.json()), res.status_code
+    except Exception as e:
+        print("TMDB proxy error:", e)
+        return jsonify({"results": [], "error": "TMDB request failed"}), 502
+
 @app.route('/api/movie-details', methods=['GET'])
 def get_movie_details():
     movie_id = request.args.get('id') 
