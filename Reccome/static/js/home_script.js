@@ -8,9 +8,6 @@ function escapeHTML(str) {
         .replace(/'/g, '&#39;');
 }
 
-// TMDB API key (sirf yahin ek jagah likhi hai)
-const TMDB_API_KEY = 'aa93bb4087f2aab708579d00e08e3b8d';
-
 /* ================== GLOBAL STORAGE (BULLETPROOF) ================== */
     let currentMovieId = null;
     let likedMovies = [];
@@ -31,9 +28,8 @@ const TMDB_API_KEY = 'aa93bb4087f2aab708579d00e08e3b8d';
     let trendingMoviesData = [];
 
     async function fetchTrendingHero() {
-        const API_KEY = TMDB_API_KEY; 
         try {
-            const response = await fetch(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`);
+            const response = await fetch(`/api/tmdb/trending/movie/day`);
             const data = await response.json();
             trendingMoviesData = data.results.slice(0, 5);
             renderHeroSlides();
@@ -951,11 +947,10 @@ fetch('/api/user_data')
             document.getElementById('genre-result-title').innerText = genreNames;
 
             // 4. TMDB Fetch API Call
-            const API_KEY = TMDB_API_KEY;
             const genreIds = selectedGenres.join(',');
             
             try {
-                const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreIds}&sort_by=popularity.desc`);
+                const res = await fetch(`/api/tmdb/discover/movie?with_genres=${genreIds}&sort_by=popularity.desc`);
                 const data = await res.json();
                 
                 grid.innerHTML = ''; // Clear loading skeletons
@@ -1016,14 +1011,13 @@ fetch('/api/user_data')
                 loadingUI.classList.remove('hidden');
                 resultUI.classList.add('hidden');
 
-                const API_KEY = TMDB_API_KEY;
                 const randomPage = Math.floor(Math.random() * 10) + 1;
                 
                 // TMDB Genre Mapping to show names instead of IDs
                 const genreMap = {28:"Action", 12:"Adventure", 16:"Animation", 35:"Comedy", 80:"Crime", 18:"Drama", 14:"Fantasy", 27:"Horror", 9648:"Mystery", 10749:"Romance", 878:"Sci-Fi", 53:"Thriller"};
 
                 try {
-                    const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&page=${randomPage}`);
+                    const res = await fetch(`/api/tmdb/discover/movie?page=${randomPage}`);
                     const data = await res.json();
                     const randomMovie = data.results[Math.floor(Math.random() * data.results.length)];
 
@@ -1104,7 +1098,6 @@ fetch('/api/user_data')
                 loadingUI.classList.remove('hidden');
                 resultUI.classList.add('hidden');
 
-                const API_KEY = TMDB_API_KEY;
                 const randomPage = Math.floor(Math.random() * 10) + 1;
                 
                 // TMDB Genre Mapping to show names instead of IDs
@@ -1112,7 +1105,7 @@ fetch('/api/user_data')
 
                 try {
                     // --- 🔥 NAYA CHANGE: SMART RANDOMIZER LOGIC ---
-                    let url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&page=${randomPage}`;
+                    let url = `/api/tmdb/discover/movie?page=${randomPage}`;
                     
                     // Check karo agar user ne koi genre save kiya hai (Hidden input se)
                     const savedUserGenre = document.getElementById('user-saved-genre')?.value;
@@ -1197,9 +1190,8 @@ fetch('/api/user_data')
                 }
 
                 searchTimeout = setTimeout(async () => {
-                    const API_KEY = TMDB_API_KEY;
                     try {
-                        const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${query}`);
+                        const res = await fetch(`/api/tmdb/search/movie?query=${encodeURIComponent(query)}`);
                         const data = await res.json();
                         
                         searchDropdown.innerHTML = ''; 
